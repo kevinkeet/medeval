@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="description" content="Evidence-based medication data reference - NNT, NNH, and clinical trial sources for all medications in the MedBenefit Calculator.">
+    <meta name="theme-color" content="#0D5C63">
+    <title>Medication Data Reference | MedBenefit Calculator</title>
+
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            margin-bottom: 20px;
+            padding: 8px 16px;
+            background: var(--primary-light);
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .back-link:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Search and Filter Controls */
+        .controls-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 24px;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 16px 12px 44px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(13, 92, 99, 0.12);
+        }
+
+        .search-box::before {
+            content: '';
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 18px;
+            height: 18px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%235A6A6E'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'%3E%3C/path%3E%3C/svg%3E");
+            background-size: contain;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-group label {
+            font-weight: 500;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .filter-group select {
+            padding: 10px 14px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            background: white;
+            cursor: pointer;
+        }
+
+        /* Stats Summary */
+        .stats-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            border-left: 4px solid var(--primary);
+        }
+
+        .stat-card.preventive { border-left-color: #1565c0; }
+        .stat-card.disease-mod { border-left-color: #2e7d32; }
+        .stat-card.symptomatic { border-left-color: #e65100; }
+        .stat-card.replacement { border-left-color: #7b1fa2; }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        /* Data Table */
+        .table-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .data-table thead {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .data-table th {
+            padding: 16px 12px;
+            text-align: left;
+            font-weight: 600;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .data-table th:hover {
+            background: var(--primary-dark);
+        }
+
+        .data-table th.sortable::after {
+            content: ' ↕';
+            opacity: 0.5;
+        }
+
+        .data-table th.sorted-asc::after {
+            content: ' ↑';
+            opacity: 1;
+        }
+
+        .data-table th.sorted-desc::after {
+            content: ' ↓';
+            opacity: 1;
+        }
+
+        .data-table tbody tr {
+            border-bottom: 1px solid var(--border);
+            transition: background 0.2s ease;
+        }
+
+        .data-table tbody tr:hover {
+            background: var(--primary-light);
+        }
+
+        .data-table tbody tr:nth-child(even) {
+            background: var(--light-gray);
+        }
+
+        .data-table tbody tr:nth-child(even):hover {
+            background: var(--primary-light);
+        }
+
+        .data-table td {
+            padding: 14px 12px;
+            vertical-align: top;
+        }
+
+        /* Cell styling */
+        .med-name-cell {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .med-name-cell .brand {
+            font-weight: 400;
+            font-size: 0.8rem;
+            color: var(--muted);
+            display: block;
+        }
+
+        .purpose-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .purpose-badge.preventive { background: #e3f2fd; color: #1565c0; }
+        .purpose-badge.disease_modifying { background: #e8f5e9; color: #2e7d32; }
+        .purpose-badge.symptomatic { background: #fff3e0; color: #e65100; }
+        .purpose-badge.replacement { background: #f3e5f5; color: #7b1fa2; }
+
+        .outcome-cell {
+            max-width: 200px;
+        }
+
+        .outcome-tag {
+            display: inline-block;
+            background: var(--light-gray);
+            padding: 3px 8px;
+            border-radius: 4px;
+            margin: 2px;
+            font-size: 0.8rem;
+        }
+
+        .nnt-cell, .nnh-cell {
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .nnt-cell { color: var(--benefit); }
+        .nnh-cell { color: var(--harm); }
+
+        .rrr-cell {
+            text-align: center;
+        }
+
+        .source-cell {
+            font-size: 0.8rem;
+            color: var(--muted);
+            max-width: 150px;
+        }
+
+        .quality-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .quality-badge.hard { background: #d4edda; color: #155724; }
+        .quality-badge.composite { background: #fff3cd; color: #856404; }
+        .quality-badge.surrogate { background: #f8d7da; color: #721c24; }
+
+        /* Expandable rows */
+        .expand-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .expand-btn:hover {
+            background: var(--primary-light);
+        }
+
+        .details-row {
+            display: none;
+            background: #f8fafc;
+        }
+
+        .details-row.visible {
+            display: table-row;
+        }
+
+        .details-cell {
+            padding: 20px !important;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .details-section {
+            background: white;
+            padding: 16px;
+            border-radius: 10px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .details-section.benefits { border-left-color: var(--benefit); }
+        .details-section.harms { border-left-color: var(--harm); }
+        .details-section.info { border-left-color: var(--accent); }
+
+        .details-section h4 {
+            margin: 0 0 12px 0;
+            color: var(--primary);
+            font-size: 0.95rem;
+        }
+
+        .details-section.benefits h4 { color: var(--benefit); }
+        .details-section.harms h4 { color: var(--harm); }
+
+        .details-list {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .details-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.85rem;
+        }
+
+        .details-list li:last-child {
+            border-bottom: none;
+        }
+
+        .details-list strong {
+            color: var(--text);
+        }
+
+        .details-list .metric {
+            color: var(--muted);
+            font-size: 0.8rem;
+        }
+
+        /* No results */
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--muted);
+        }
+
+        .no-results-icon {
+            font-size: 4rem;
+            margin-bottom: 16px;
+        }
+
+        /* Print styles */
+        @media print {
+            .controls-bar, .back-link, .expand-btn {
+                display: none;
+            }
+
+            .data-table {
+                font-size: 0.8rem;
+            }
+
+            .table-container {
+                box-shadow: none;
+                border: 1px solid var(--border);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .controls-bar {
+                flex-direction: column;
+            }
+
+            .table-container {
+                overflow-x: auto;
+            }
+
+            .data-table {
+                min-width: 900px;
+            }
+
+            .stats-summary {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="header-title">
+                    <h1>Medication Data Reference</h1>
+                    <p class="subtitle">Evidence-based NNT, NNH, and clinical trial sources</p>
+                </div>
+                <nav class="header-nav">
+                    <a href="index.html" class="nav-link" title="Back to Calculator">
+                        Calculator
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="container" style="padding-top: 30px; padding-bottom: 60px;">
+        <a href="index.html" class="back-link">← Back to Calculator</a>
+
+        <!-- Stats Summary -->
+        <div class="stats-summary">
+            <div class="stat-card">
+                <div class="stat-number" id="total-meds">0</div>
+                <div class="stat-label">Total Medications</div>
+            </div>
+            <div class="stat-card preventive">
+                <div class="stat-number" id="preventive-count">0</div>
+                <div class="stat-label">Preventive</div>
+            </div>
+            <div class="stat-card disease-mod">
+                <div class="stat-number" id="disease-mod-count">0</div>
+                <div class="stat-label">Disease-Modifying</div>
+            </div>
+            <div class="stat-card symptomatic">
+                <div class="stat-number" id="symptomatic-count">0</div>
+                <div class="stat-label">Symptomatic</div>
+            </div>
+            <div class="stat-card replacement">
+                <div class="stat-number" id="replacement-count">0</div>
+                <div class="stat-label">Replacement</div>
+            </div>
+        </div>
+
+        <!-- Search and Filters -->
+        <div class="controls-bar">
+            <div class="search-box">
+                <input type="text" id="search-input" placeholder="Search medications, classes, or outcomes...">
+            </div>
+            <div class="filter-group">
+                <label for="purpose-filter">Purpose:</label>
+                <select id="purpose-filter">
+                    <option value="">All Purposes</option>
+                    <option value="preventive">Preventive</option>
+                    <option value="disease_modifying">Disease-Modifying</option>
+                    <option value="symptomatic">Symptomatic</option>
+                    <option value="replacement">Replacement</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="class-filter">Class:</label>
+                <select id="class-filter">
+                    <option value="">All Classes</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="quality-filter">Evidence:</label>
+                <select id="quality-filter">
+                    <option value="">All Quality</option>
+                    <option value="hard">Hard Endpoints</option>
+                    <option value="composite">Composite</option>
+                    <option value="surrogate">Surrogate</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Data Table -->
+        <div class="table-container">
+            <table class="data-table" id="med-table">
+                <thead>
+                    <tr>
+                        <th style="width: 40px;"></th>
+                        <th class="sortable" data-sort="name">Medication</th>
+                        <th class="sortable" data-sort="class">Class</th>
+                        <th class="sortable" data-sort="purpose">Purpose</th>
+                        <th>Primary Indication</th>
+                        <th>Key Outcome</th>
+                        <th class="sortable" data-sort="rrr">RRR</th>
+                        <th class="sortable" data-sort="nnt">NNT</th>
+                        <th>Source</th>
+                        <th>Quality</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                    <!-- Populated by JavaScript -->
+                </tbody>
+            </table>
+            <div class="no-results" id="no-results" style="display: none;">
+                <div class="no-results-icon">—</div>
+                <h3>No medications found</h3>
+                <p>Try adjusting your search or filters</p>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>MedBenefit Calculator | Evidence-Based Medication Data Reference</p>
+            <p>Data sourced from published clinical trials and meta-analyses</p>
+        </div>
+    </footer>
+
+    <script src="medications-database.js"></script>
+    <script>
+        // State
+        let medications = [];
+        let filteredMeds = [];
+        let sortColumn = 'name';
+        let sortDirection = 'asc';
+        let expandedRows = new Set();
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadMedications();
+            setupEventListeners();
+            updateStats();
+            populateClassFilter();
+            renderTable();
+        });
+
+        // Load and process medications
+        function loadMedications() {
+            medications = getAllMedications().map(med => {
+                // Extract primary benefit data
+                const primaryData = extractPrimaryBenefit(med);
+                return {
+                    ...med,
+                    primaryIndication: primaryData.indication,
+                    primaryOutcome: primaryData.outcome,
+                    primaryRRR: primaryData.rrr,
+                    primaryNNT: primaryData.nnt,
+                    primarySource: primaryData.source,
+                    primaryQuality: primaryData.quality,
+                    primaryTimeframe: primaryData.timeframe
+                };
+            });
+            filteredMeds = [...medications];
+        }
+
+        // Extract primary benefit for display
+        function extractPrimaryBenefit(med) {
+            const benefits = med.benefits || {};
+            let primaryIndication = '';
+            let primaryOutcome = '';
+            let primaryRRR = null;
+            let primaryNNT = null;
+            let primarySource = '';
+            let primaryQuality = '';
+            let primaryTimeframe = '';
+
+            // Find the most significant benefit (prefer hard endpoints with mortality/CV outcomes)
+            const priorityOutcomes = ['mortality', 'all_cause_mortality', 'cv_mortality', 'cv_death', 'stroke', 'mi', 'mace'];
+
+            for (const [indication, outcomes] of Object.entries(benefits)) {
+                for (const [outcome, data] of Object.entries(outcomes)) {
+                    if (!primaryOutcome || priorityOutcomes.includes(outcome)) {
+                        if (data.nnt || data.rrr) {
+                            primaryIndication = indication;
+                            primaryOutcome = outcome;
+                            primaryRRR = data.rrr;
+                            primaryNNT = data.nnt;
+                            primarySource = data.source || '';
+                            primaryQuality = data.quality || 'surrogate';
+                            primaryTimeframe = data.timeframe;
+
+                            if (priorityOutcomes.includes(outcome) && data.quality === 'hard') {
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return { indication: primaryIndication, outcome: primaryOutcome, rrr: primaryRRR, nnt: primaryNNT, source: primarySource, quality: primaryQuality, timeframe: primaryTimeframe };
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            document.getElementById('search-input').addEventListener('input', debounce(filterAndRender, 300));
+            document.getElementById('purpose-filter').addEventListener('change', filterAndRender);
+            document.getElementById('class-filter').addEventListener('change', filterAndRender);
+            document.getElementById('quality-filter').addEventListener('change', filterAndRender);
+
+            // Sortable columns
+            document.querySelectorAll('.sortable').forEach(th => {
+                th.addEventListener('click', () => handleSort(th.dataset.sort));
+            });
+        }
+
+        // Debounce utility
+        function debounce(func, wait) {
+            let timeout;
+            return function(...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
+        }
+
+        // Populate class filter
+        function populateClassFilter() {
+            const classes = [...new Set(medications.map(m => m.class))].sort();
+            const select = document.getElementById('class-filter');
+            classes.forEach(cls => {
+                const option = document.createElement('option');
+                option.value = cls;
+                option.textContent = cls;
+                select.appendChild(option);
+            });
+        }
+
+        // Update stats
+        function updateStats() {
+            document.getElementById('total-meds').textContent = medications.length;
+            document.getElementById('preventive-count').textContent = medications.filter(m => m.purpose === 'preventive').length;
+            document.getElementById('disease-mod-count').textContent = medications.filter(m => m.purpose === 'disease_modifying').length;
+            document.getElementById('symptomatic-count').textContent = medications.filter(m => m.purpose === 'symptomatic').length;
+            document.getElementById('replacement-count').textContent = medications.filter(m => m.purpose === 'replacement').length;
+        }
+
+        // Filter medications
+        function filterAndRender() {
+            const search = document.getElementById('search-input').value.toLowerCase();
+            const purpose = document.getElementById('purpose-filter').value;
+            const medClass = document.getElementById('class-filter').value;
+            const quality = document.getElementById('quality-filter').value;
+
+            filteredMeds = medications.filter(med => {
+                // Search filter
+                if (search) {
+                    const searchFields = [
+                        med.name,
+                        med.class,
+                        ...(med.brandNames || []),
+                        ...(med.indications || []),
+                        med.primaryOutcome
+                    ].join(' ').toLowerCase();
+                    if (!searchFields.includes(search)) return false;
+                }
+
+                // Purpose filter
+                if (purpose && med.purpose !== purpose) return false;
+
+                // Class filter
+                if (medClass && med.class !== medClass) return false;
+
+                // Quality filter
+                if (quality && med.primaryQuality !== quality) return false;
+
+                return true;
+            });
+
+            renderTable();
+        }
+
+        // Handle sorting
+        function handleSort(column) {
+            if (sortColumn === column) {
+                sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                sortColumn = column;
+                sortDirection = 'asc';
+            }
+
+            // Update sort indicators
+            document.querySelectorAll('.sortable').forEach(th => {
+                th.classList.remove('sorted-asc', 'sorted-desc');
+                if (th.dataset.sort === column) {
+                    th.classList.add(sortDirection === 'asc' ? 'sorted-asc' : 'sorted-desc');
+                }
+            });
+
+            // Sort
+            filteredMeds.sort((a, b) => {
+                let valA, valB;
+
+                switch (column) {
+                    case 'name':
+                        valA = a.name.toLowerCase();
+                        valB = b.name.toLowerCase();
+                        break;
+                    case 'class':
+                        valA = a.class.toLowerCase();
+                        valB = b.class.toLowerCase();
+                        break;
+                    case 'purpose':
+                        valA = a.purpose;
+                        valB = b.purpose;
+                        break;
+                    case 'rrr':
+                        valA = a.primaryRRR || 0;
+                        valB = b.primaryRRR || 0;
+                        break;
+                    case 'nnt':
+                        valA = a.primaryNNT || 9999;
+                        valB = b.primaryNNT || 9999;
+                        break;
+                    default:
+                        valA = a.name;
+                        valB = b.name;
+                }
+
+                if (valA < valB) return sortDirection === 'asc' ? -1 : 1;
+                if (valA > valB) return sortDirection === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            renderTable();
+        }
+
+        // Render table
+        function renderTable() {
+            const tbody = document.getElementById('table-body');
+            const noResults = document.getElementById('no-results');
+
+            if (filteredMeds.length === 0) {
+                tbody.innerHTML = '';
+                noResults.style.display = 'block';
+                return;
+            }
+
+            noResults.style.display = 'none';
+
+            tbody.innerHTML = filteredMeds.map(med => `
+                <tr class="med-row" data-id="${med.id}">
+                    <td>
+                        <button class="expand-btn" onclick="toggleDetails('${med.id}')">
+                            ${expandedRows.has(med.id) ? '▼' : '▶'}
+                        </button>
+                    </td>
+                    <td class="med-name-cell">
+                        ${med.name}
+                        <span class="brand">${(med.brandNames || []).join(', ')}</span>
+                    </td>
+                    <td>${med.class}</td>
+                    <td>
+                        <span class="purpose-badge ${med.purpose}">${formatPurpose(med.purpose)}</span>
+                    </td>
+                    <td>${formatIndicationName(med.primaryIndication)}</td>
+                    <td>${formatOutcomeName(med.primaryOutcome)}</td>
+                    <td class="rrr-cell">${med.primaryRRR ? (med.primaryRRR * 100).toFixed(0) + '%' : '—'}</td>
+                    <td class="nnt-cell">${med.primaryNNT || '—'}</td>
+                    <td class="source-cell">${med.primarySource || '—'}</td>
+                    <td>
+                        <span class="quality-badge ${med.primaryQuality}">${med.primaryQuality || '—'}</span>
+                    </td>
+                </tr>
+                <tr class="details-row ${expandedRows.has(med.id) ? 'visible' : ''}" id="details-${med.id}">
+                    <td colspan="10" class="details-cell">
+                        ${renderDetails(med)}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Toggle details row
+        function toggleDetails(id) {
+            if (expandedRows.has(id)) {
+                expandedRows.delete(id);
+            } else {
+                expandedRows.add(id);
+            }
+            renderTable();
+        }
+
+        // Render expanded details
+        function renderDetails(med) {
+            let benefitsHtml = '';
+            let harmsHtml = '';
+
+            // Benefits
+            const benefits = med.benefits || {};
+            for (const [indication, outcomes] of Object.entries(benefits)) {
+                for (const [outcome, data] of Object.entries(outcomes)) {
+                    benefitsHtml += `
+                        <li>
+                            <strong>${formatOutcomeName(outcome)}</strong> (${formatIndicationName(indication)})
+                            <div class="metric">
+                                ${data.rrr ? `RRR: ${(data.rrr * 100).toFixed(0)}%` : ''}
+                                ${data.nnt ? ` | NNT: ${data.nnt}` : ''}
+                                ${data.timeframe ? ` | ${data.timeframe}yr` : ''}
+                                ${data.source ? ` | ${data.source}` : ''}
+                            </div>
+                        </li>
+                    `;
+                }
+            }
+
+            // Harms
+            const harms = med.harms || {};
+            for (const [harm, data] of Object.entries(harms)) {
+                harmsHtml += `
+                    <li>
+                        <strong>${formatOutcomeName(harm)}</strong>
+                        <div class="metric">
+                            ${data.nnh ? `NNH: ${data.nnh}` : ''}
+                            ${data.timeframe ? ` | ${data.timeframe}yr` : ''}
+                            ${data.source ? ` | ${data.source}` : ''}
+                        </div>
+                    </li>
+                `;
+            }
+
+            return `
+                <div class="details-grid">
+                    <div class="details-section benefits">
+                        <h4>Benefits</h4>
+                        <ul class="details-list">
+                            ${benefitsHtml || '<li>No specific benefit data available</li>'}
+                        </ul>
+                    </div>
+                    <div class="details-section harms">
+                        <h4>Harms (NNH)</h4>
+                        <ul class="details-list">
+                            ${harmsHtml || '<li>No significant harms identified from trial data</li>'}
+                        </ul>
+                    </div>
+                    <div class="details-section info">
+                        <h4>Additional Info</h4>
+                        <ul class="details-list">
+                            <li><strong>Burden:</strong> ${med.burden || 'Not specified'}</li>
+                            <li><strong>Details:</strong> ${med.burdenDetails || 'Not specified'}</li>
+                            <li><strong>Annual Cost:</strong> $${med.annualCost || '—'}</li>
+                            <li><strong>Monitoring:</strong> ${med.monitoring || 'Not specified'}</li>
+                            <li><strong>Contraindications:</strong> ${(med.contraindications || []).join(', ') || 'None specified'}</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Format purpose name
+        function formatPurpose(purpose) {
+            const map = {
+                'preventive': 'Prevent',
+                'disease_modifying': 'Disease-Mod',
+                'symptomatic': 'Symptom',
+                'replacement': 'Replace'
+            };
+            return map[purpose] || purpose;
+        }
+
+        // Format indication name
+        function formatIndicationName(name) {
+            if (!name) return '—';
+            const map = {
+                'heart_failure': 'Heart Failure',
+                'diabetes': 'Diabetes',
+                'diabetes_cv': 'Diabetes (CV)',
+                'afib_stroke_prevention': 'AFib/Stroke Prevention',
+                'hypertension': 'Hypertension',
+                'ascvd_prevention': 'ASCVD Prevention',
+                'secondary_prevention': 'Secondary Prevention',
+                'primary_prevention': 'Primary Prevention',
+                'ckd': 'Chronic Kidney Disease',
+                'osteoporosis': 'Osteoporosis',
+                'gout': 'Gout',
+                'neuropathic_pain': 'Neuropathic Pain',
+                'copd': 'COPD',
+                'asthma': 'Asthma'
+            };
+            return map[name] || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        }
+
+        // Format outcome name
+        function formatOutcomeName(name) {
+            if (!name) return '—';
+            const map = {
+                'mortality': 'All-Cause Mortality',
+                'all_cause_mortality': 'All-Cause Mortality',
+                'cv_mortality': 'CV Mortality',
+                'cv_death': 'CV Death',
+                'cv_death_hf_hosp': 'CV Death/HF Hosp',
+                'stroke': 'Stroke',
+                'mi': 'MI',
+                'mace': 'MACE',
+                'hospitalization': 'Hospitalization',
+                'hf_hospitalization': 'HF Hospitalization',
+                'kidney_progression': 'Kidney Progression',
+                'hip_fracture': 'Hip Fracture',
+                'vertebral_fracture': 'Vertebral Fracture',
+                'exacerbations': 'Exacerbations',
+                'gout_flares': 'Gout Flares',
+                'pain_relief': 'Pain Relief',
+                'symptom_relief': 'Symptom Relief',
+                'a1c_reduction': 'A1C Reduction'
+            };
+            return map[name] || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        }
+    </script>
+</body>
+</html>
