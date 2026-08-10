@@ -7,9 +7,12 @@ Individualized medication benefit, harm & burden. Deployed via GitHub Pages
 benefit for the patient in front of you — baseline risk → competing mortality →
 time-to-benefit → adherence — then shows harms (patient-scaled, starting
 immediately) and treatment burden beside it. Every adjustment renders as a
-step in a waterfall so the reasoning is inspectable. Two views: a
-single-medication deep dive and a regimen review that ranks every therapy
-applicable to the patient by severity-weighted net benefit.
+step in a waterfall so the reasoning is inspectable. The default Med-review
+view restores the original site's consultation: EMR quick-import, goals of
+care with net-benefit thresholds, a color-coded risk dashboard, the
+patient's current medications reviewed beside best-in-class candidates,
+Beers/elderly-safety checks, and a closing synthesis (start / continue /
+reconsider / verify). A single-medication deep dive remains the drill-down.
 
 This is the merger of two generations of this site:
 
