@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="description" content="Evidence-based medication benefit calculator that provides individualized assessment of medication benefits, harms, and burden based on your health profile and goals of care.">
+    <meta name="theme-color" content="#0D5C63">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>MedBenefit | Patient-Centered Medication Calculator</title>
+
+    <!-- Favicon using emoji (data URI) -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💊</text></svg>">
+
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <!-- Optional: Google Fonts for enhanced typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="styles.css">
+
+    <style>
+        /* Font override if Google Fonts loads */
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="header-title">
+                    <h1>MedBenefit Calculator</h1>
+                    <p class="subtitle">Evidence-based, individualized medication assessment</p>
+                </div>
+                <nav class="header-nav">
+                    <a href="data-reference.html" class="nav-link" title="View medication evidence data">
+                        Data Reference
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Progress indicator -->
+        <div class="progress-bar">
+            <div class="progress-step active" data-step="1">
+                <span class="step-number">1</span>
+                <span class="step-label">Risk Factors</span>
+            </div>
+            <div class="progress-step" data-step="2">
+                <span class="step-number">2</span>
+                <span class="step-label">Goals of Care</span>
+            </div>
+            <div class="progress-step" data-step="3">
+                <span class="step-number">3</span>
+                <span class="step-label">Medications</span>
+            </div>
+            <div class="progress-step" data-step="4">
+                <span class="step-number">4</span>
+                <span class="step-label">Results</span>
+            </div>
+        </div>
+
+        <!-- SECTION 1: Risk Factors -->
+        <section id="section-risk-factors" class="form-section active">
+            <h2>Section 1: Your Health Profile</h2>
+            <p class="section-description">Enter your health information to calculate individualized risks. This data is used locally and never stored.</p>
+
+            <!-- AI Import Section -->
+            <div class="card ai-import-card">
+                <h3>Quick Import from Medical Records</h3>
+                <p class="ai-import-description">Use AI to automatically extract patient data from your EMR or clinical notes.</p>
+
+                <div class="ai-import-tabs">
+                    <button type="button" class="ai-tab active" data-tab="emr-prompt">EMR AI Prompt</button>
+                    <button type="button" class="ai-tab" data-tab="paste-extract">Paste & Extract</button>
+                </div>
+
+                <div id="emr-prompt-tab" class="ai-tab-content active">
+                    <p class="ai-tab-description">Copy this prompt into your AI-enabled EMR to generate structured patient data:</p>
+                    <div class="prompt-container">
+                        <pre id="emr-prompt-text" class="emr-prompt">Extract the following patient information in JSON format for a medication benefit calculator:
+
+{
+  "demographics": {
+    "age": [number],
+    "sex": ["male" or "female"],
+    "race": ["white", "black", "hispanic", "asian", or "other"],
+    "weight_kg": [number],
+    "height_cm": [number]
+  },
+  "vitals": {
+    "systolic_bp": [number mmHg],
+    "diastolic_bp": [number mmHg]
+  },
+  "labs": {
+    "total_cholesterol": [number mg/dL],
+    "ldl": [number mg/dL],
+    "hdl": [number mg/dL],
+    "triglycerides": [number mg/dL],
+    "creatinine": [number mg/dL],
+    "egfr": [number mL/min/1.73m²],
+    "a1c": [number %],
+    "fasting_glucose": [number mg/dL],
+    "bnp": [number pg/mL],
+    "uacr": [number mg/g]
+  },
+  "cardiac": {
+    "ejection_fraction": [number %],
+    "nyha_class": [0-4, where 0=no HF],
+    "afib": [true/false],
+    "prior_stroke_tia": [true/false],
+    "prior_mi": [true/false],
+    "pvd": [true/false],
+    "heart_failure": [true/false]
+  },
+  "diabetes": {
+    "status": ["none", "prediabetes", "type2", or "type1"],
+    "duration_years": [number]
+  },
+  "bleeding_risks": {
+    "prior_major_bleed": [true/false],
+    "anemia": [true/false],
+    "liver_disease": [true/false],
+    "heavy_alcohol": [true/false],
+    "nsaid_use": [true/false],
+    "on_antiplatelet": [true/false],
+    "fall_risk": [true/false]
+  },
+  "other_conditions": {
+    "hypertension_treated": [true/false],
+    "current_smoker": [true/false],
+    "former_smoker": [true/false],
+    "family_hx_cad": [true/false],
+    "copd": [true/false],
+    "sleep_apnea": [true/false],
+    "depression": [true/false],
+    "dementia": [true/false],
+    "active_cancer": [true/false],
+    "frailty": [true/false],
+    "osteoporosis": [true/false],
+    "gout": [true/false]
+  },
+  "current_medications": [array of medication names from this list:
+    // Cardiovascular
+    "metoprolol", "carvedilol", "bisoprolol", "lisinopril", "enalapril",
+    "losartan", "valsartan", "sacubitril_valsartan", "spironolactone",
+    "eplerenone", "finerenone", "amlodipine", "hydrochlorothiazide",
+    "chlorthalidone", "furosemide", "bumetanide", "torsemide", "digoxin",
+    // Cholesterol
+    "atorvastatin", "rosuvastatin", "simvastatin", "ezetimibe",
+    "evolocumab", "icosapent_ethyl",
+    // Diabetes
+    "metformin", "empagliflozin", "dapagliflozin", "canagliflozin",
+    "semaglutide", "liraglutide", "glipizide", "sitagliptin", "insulin",
+    // Blood thinners
+    "aspirin", "clopidogrel", "apixaban", "rivaroxaban",
+    "rivaroxaban_vascular", "dabigatran", "edoxaban", "warfarin",
+    // Osteoporosis
+    "alendronate", "risedronate", "zoledronic_acid", "denosumab",
+    "teriparatide", "romosozumab",
+    // Respiratory
+    "fluticasone_inh", "fluticasone_salmeterol", "tiotropium",
+    "fluticasone_umeclidinium_vilanterol",
+    // Gout
+    "allopurinol", "febuxostat", "colchicine",
+    // Pain/Neuro
+    "gabapentin", "pregabalin", "duloxetine",
+    // Other
+    "omeprazole", "levothyroxine", "vitamin-d"
+  ]
+}
+
+Use null for unknown values. Extract from the most recent available data.</pre>
+                        <button type="button" class="btn btn-secondary copy-prompt-btn" onclick="copyEMRPrompt()">
+                            Copy Prompt
+                        </button>
+                    </div>
+                </div>
+
+                <div id="paste-extract-tab" class="ai-tab-content">
+                    <p class="ai-tab-description">Paste AI-generated JSON or clinical notes below, then click Extract:</p>
+                    <textarea id="ai-paste-input" class="ai-paste-textarea" placeholder="Paste the JSON output from your EMR AI, or paste clinical notes/text and click Extract to use AI parsing..."></textarea>
+                    <div class="ai-extract-buttons">
+                        <button type="button" class="btn btn-primary" onclick="extractFromPaste()">
+                            Extract & Fill Form
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="clearPasteInput()">
+                            Clear
+                        </button>
+                    </div>
+                    <div id="ai-extract-status" class="ai-extract-status"></div>
+                </div>
+            </div>
+
+            <!-- Demographics -->
+            <div class="card">
+                <h3>Demographics</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="age">Age (years)</label>
+                        <input type="number" id="age" min="18" max="120" placeholder="65" value="72">
+                    </div>
+                    <div class="form-group">
+                        <label for="sex">Biological Sex</label>
+                        <select id="sex">
+                            <option value="">Select...</option>
+                            <option value="male" selected>Male</option>
+                            <option value="female">Female</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="race">Race/Ethnicity</label>
+                        <select id="race">
+                            <option value="">Select...</option>
+                            <option value="white" selected>White</option>
+                            <option value="black">Black/African American</option>
+                            <option value="hispanic">Hispanic/Latino</option>
+                            <option value="asian">Asian</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="weight">Weight (kg)</label>
+                        <input type="number" id="weight" min="30" max="300" placeholder="70" value="85">
+                    </div>
+                    <div class="form-group">
+                        <label for="height">Height (cm)</label>
+                        <input type="number" id="height" min="100" max="250" placeholder="170" value="175">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cardiovascular Risk Factors -->
+            <div class="card">
+                <h3>Cardiovascular Risk Factors</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="systolic-bp">Systolic Blood Pressure (mmHg)</label>
+                        <input type="number" id="systolic-bp" min="80" max="250" placeholder="130" value="142">
+                    </div>
+                    <div class="form-group">
+                        <label for="diastolic-bp">Diastolic Blood Pressure (mmHg)</label>
+                        <input type="number" id="diastolic-bp" min="40" max="150" placeholder="80" value="88">
+                    </div>
+                    <div class="form-group">
+                        <label for="total-cholesterol">Total Cholesterol (mg/dL)</label>
+                        <input type="number" id="total-cholesterol" min="100" max="400" placeholder="200" value="210">
+                    </div>
+                    <div class="form-group">
+                        <label for="ldl">LDL Cholesterol (mg/dL)</label>
+                        <input type="number" id="ldl" min="30" max="300" placeholder="130" value="125">
+                    </div>
+                    <div class="form-group">
+                        <label for="hdl">HDL Cholesterol (mg/dL)</label>
+                        <input type="number" id="hdl" min="15" max="150" placeholder="50" value="42">
+                    </div>
+                    <div class="form-group">
+                        <label for="triglycerides">Triglycerides (mg/dL)</label>
+                        <input type="number" id="triglycerides" min="30" max="1000" placeholder="150" value="180">
+                    </div>
+                </div>
+                <div class="checkbox-grid">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="htn-treatment" checked>
+                        <span>Currently on blood pressure medication</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="smoker">
+                        <span>Current smoker</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="former-smoker">
+                        <span>Former smoker</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="family-hx-cad">
+                        <span>Family history of premature heart disease</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Diabetes -->
+            <div class="card">
+                <h3>Diabetes</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="diabetes-status">Diabetes Status</label>
+                        <select id="diabetes-status">
+                            <option value="none">No diabetes</option>
+                            <option value="prediabetes">Prediabetes</option>
+                            <option value="type2" selected>Type 2 Diabetes</option>
+                            <option value="type1">Type 1 Diabetes</option>
+                        </select>
+                    </div>
+                    <div class="form-group diabetes-fields">
+                        <label for="a1c">HbA1c (%)</label>
+                        <input type="number" id="a1c" min="4" max="15" step="0.1" placeholder="7.0" value="7.8">
+                    </div>
+                    <div class="form-group diabetes-fields">
+                        <label for="diabetes-duration">Years since diagnosis</label>
+                        <input type="number" id="diabetes-duration" min="0" max="60" placeholder="5" value="8">
+                    </div>
+                    <div class="form-group diabetes-fields">
+                        <label for="fasting-glucose">Fasting glucose (mg/dL)</label>
+                        <input type="number" id="fasting-glucose" min="50" max="500" placeholder="120" value="145">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Heart & Kidney Function -->
+            <div class="card">
+                <h3>Heart & Kidney Function</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="ef">Ejection Fraction (%) <span class="optional">if known</span></label>
+                        <input type="number" id="ef" min="5" max="80" placeholder="55" value="35">
+                    </div>
+                    <div class="form-group">
+                        <label for="nyha">Heart Failure Symptoms</label>
+                        <select id="nyha">
+                            <option value="0">No heart failure</option>
+                            <option value="1">NYHA I - No limitation</option>
+                            <option value="2" selected>NYHA II - Mild limitation</option>
+                            <option value="3">NYHA III - Moderate limitation</option>
+                            <option value="4">NYHA IV - Severe limitation</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="creatinine">Creatinine (mg/dL)</label>
+                        <input type="number" id="creatinine" min="0.3" max="15" step="0.1" placeholder="1.0" value="1.4">
+                    </div>
+                    <div class="form-group">
+                        <label for="egfr">eGFR (mL/min/1.73m²) <span class="optional">if known</span></label>
+                        <input type="number" id="egfr" min="5" max="150" placeholder="90" value="52">
+                    </div>
+                    <div class="form-group">
+                        <label for="uacr">Urine Albumin/Creatinine Ratio (mg/g) <span class="optional">if known</span></label>
+                        <input type="number" id="uacr" min="0" max="5000" placeholder="30" value="120">
+                    </div>
+                    <div class="form-group">
+                        <label for="bnp">BNP (pg/mL) <span class="optional">if known</span></label>
+                        <input type="number" id="bnp" min="0" max="10000" placeholder="100" value="450">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Atrial Fibrillation -->
+            <div class="card">
+                <h3>Atrial Fibrillation & Stroke Risk</h3>
+                <div class="checkbox-grid">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="afib" checked>
+                        <span>Atrial fibrillation or flutter</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="prior-stroke">
+                        <span>Prior stroke or TIA</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="prior-mi">
+                        <span>Prior heart attack (MI)</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="pvd">
+                        <span>Peripheral vascular disease</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="chf-history" checked>
+                        <span>History of heart failure</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Bleeding Risk -->
+            <div class="card">
+                <h3>Bleeding Risk Factors</h3>
+                <div class="checkbox-grid">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="prior-bleed">
+                        <span>Prior major bleeding</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="anemia">
+                        <span>Anemia</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="liver-disease">
+                        <span>Liver disease</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="alcohol">
+                        <span>Heavy alcohol use (>8 drinks/week)</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="nsaid-use">
+                        <span>Regular NSAID use</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="antiplatelet">
+                        <span>On antiplatelet therapy (aspirin, clopidogrel)</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="fall-risk">
+                        <span>High fall risk</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Other Conditions -->
+            <div class="card">
+                <h3>Other Medical History</h3>
+                <div class="checkbox-grid">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="copd">
+                        <span>COPD or chronic lung disease</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="osa">
+                        <span>Sleep apnea</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="depression">
+                        <span>Depression or anxiety</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="dementia">
+                        <span>Cognitive impairment or dementia</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="cancer">
+                        <span>Active cancer</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="frailty">
+                        <span>Frailty or poor functional status</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="osteoporosis">
+                        <span>Osteoporosis</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="gout">
+                        <span>Gout</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="asthma">
+                        <span>Asthma</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="neuropathy">
+                        <span>Diabetic neuropathy or chronic pain</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="hypothyroidism">
+                        <span>Hypothyroidism</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="fibromyalgia">
+                        <span>Fibromyalgia</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="nav-buttons">
+                <button type="button" class="btn btn-primary" onclick="goToSection(2)">Continue to Goals of Care →</button>
+            </div>
+        </section>
+
+        <!-- SECTION 2: Goals of Care -->
+        <section id="section-goals" class="form-section">
+            <h2>Section 2: Your Goals of Care</h2>
+            <p class="section-description">Help us understand what matters most to you in medical decisions.</p>
+
+            <div class="card">
+                <h3>Treatment Philosophy</h3>
+                <p>On a spectrum from comfort-focused to aggressive prevention, where do you fall?</p>
+
+                <div class="goc-spectrum">
+                    <div class="goc-option" data-value="1">
+                        <div class="goc-header comfort">Comfort-Focused</div>
+                        <div class="goc-description">
+                            <p><strong>My priority is quality of life now.</strong></p>
+                            <ul>
+                                <li>I want to minimize medications and their side effects</li>
+                                <li>Only take treatments with very large, proven benefits</li>
+                                <li>I'd rather accept health risks than medication burden</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="goc-option" data-value="2">
+                        <div class="goc-header selective">Selective</div>
+                        <div class="goc-description">
+                            <p><strong>I want high-value treatments only.</strong></p>
+                            <ul>
+                                <li>I'll take medications with clear, substantial benefit</li>
+                                <li>Avoid treatments where burden outweighs benefit</li>
+                                <li>Quality of evidence matters to me</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="goc-option" data-value="3">
+                        <div class="goc-header balanced">Balanced</div>
+                        <div class="goc-description">
+                            <p><strong>I want reasonable prevention with attention to burden.</strong></p>
+                            <ul>
+                                <li>I'll consider most recommended preventive treatments</li>
+                                <li>Some medication burden is acceptable for benefits</li>
+                                <li>I trust guidelines but want them personalized</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="goc-option" data-value="4">
+                        <div class="goc-header proactive">Proactive</div>
+                        <div class="goc-description">
+                            <p><strong>I want to maximize prevention.</strong></p>
+                            <ul>
+                                <li>I'll take medications with any proven benefit</li>
+                                <li>Willing to accept burden for potential gain</li>
+                                <li>Living longer is very important to me</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <input type="hidden" id="goc-value" value="">
+            </div>
+
+            <div class="card">
+                <h3>Additional Preferences</h3>
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <label for="time-horizon">How far ahead do you think about health benefits?</label>
+                        <select id="time-horizon">
+                            <option value="1">Mostly day-to-day and short term</option>
+                            <option value="2">1-2 years ahead</option>
+                            <option value="3" selected>3-5 years ahead</option>
+                            <option value="5">5-10 years ahead</option>
+                            <option value="10">10+ years - long-term planning</option>
+                        </select>
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="pill-burden">How do you feel about taking multiple medications?</label>
+                        <select id="pill-burden">
+                            <option value="low">I strongly prefer fewer medications</option>
+                            <option value="moderate" selected>I'm okay with medications if they help</option>
+                            <option value="high">Number of medications doesn't bother me</option>
+                        </select>
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="cost-sensitivity">How important is medication cost?</label>
+                        <select id="cost-sensitivity">
+                            <option value="high">Very important - cost is a major factor</option>
+                            <option value="moderate" selected>Somewhat important</option>
+                            <option value="low">Not a significant factor</option>
+                        </select>
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="monitoring-tolerance">How do you feel about monitoring (blood tests, clinic visits)?</label>
+                        <select id="monitoring-tolerance">
+                            <option value="low">I want to minimize appointments and tests</option>
+                            <option value="moderate" selected>I can do reasonable monitoring</option>
+                            <option value="high">I'm fine with frequent monitoring if needed</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-buttons">
+                <button type="button" class="btn btn-secondary" onclick="goToSection(1)">← Back</button>
+                <button type="button" class="btn btn-primary" onclick="goToSection(3)">Continue to Medications →</button>
+            </div>
+        </section>
+
+        <!-- SECTION 3: Medications -->
+        <section id="section-medications" class="form-section">
+            <h2>Section 3: Your Current Medications</h2>
+            <p class="section-description">Select all medications you are currently taking.</p>
+
+            <div class="card">
+                <h3>Cardiovascular Medications</h3>
+                <div class="med-checkbox-grid">
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="metoprolol">
+                        <span class="med-name">Metoprolol XL (Toprol)</span>
+                        <span class="med-class">Beta-blocker</span>
+                    </label>
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="carvedilol" checked>
+                        <span class="med-name">Carvedilol (Coreg)</span>
+                        <span class="med-class">Beta-blocker</span>
+                    </label>
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="bisoprolol">
+                        <span class="med-name">Bisoprolol (Zebeta)</span>
+                        <span class="med-class">Beta-blocker</span>
+                    </label>
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="lisinopril">
+                        <span class="med-name">Lisinopril (Zestril)</span>
+                        <span class="med-class">ACE Inhibitor</span>
+                    </label>
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="enalapril">
+                        <span class="med-name">Enalapril (Vasotec)</span>
+                        <span class="med-class">ACE Inhibitor</span>
+                    </label>
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="losartan">
+                        <span class="med-name">Losartan (Cozaar)</span>
+                        <span class="med-class">ARB</span>
+                    </label>
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="valsartan">
+                        <span class="med-name">Valsartan (Diovan)</span>
+                        <span class="med-class">ARB</span>
+                    </label>
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="sacubitril_valsartan">
+                        <span class="med-name">Entresto (sacubitril/valsartan)</span>
+                        <span class="med-class">ARNI</span>
+                    </label>
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="spironolactone">
+                        <span class="med-name">Spironolactone (Aldactone)</span>
+                        <span class="med-class">MRA</span>
+                    </label>
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="eplerenone">
+                        <span class="med-name">Eplerenone (Inspra)</span>
+                        <span class="med-class">MRA</span>
+                    </label>
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="finerenone">
+                        <span class="med-name">Finerenone (Kerendia)</span>
+                        <span class="med-class">Non-steroidal MRA</span>
+                    </label>
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="amlodipine">
+                        <span class="med-name">Amlodipine (Norvasc)</span>
+                        <span class="med-class">Calcium Channel Blocker</span>
+                    </label>
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="hydrochlorothiazide">
+                        <span class="med-name">Hydrochlorothiazide (HCTZ)</span>
+                        <span class="med-class">Thiazide Diuretic</span>
+                    </label>
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="chlorthalidone">
+                        <span class="med-name">Chlorthalidone (Hygroton)</span>
+                        <span class="med-class">Thiazide-like Diuretic</span>
+                    </label>
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="furosemide" checked>
+                        <span class="med-name">Furosemide (Lasix)</span>
+                        <span class="med-class">Loop Diuretic</span>
+                    </label>
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="bumetanide">
+                        <span class="med-name">Bumetanide (Bumex)</span>
+                        <span class="med-class">Loop Diuretic</span>
+                    </label>
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="torsemide">
+                        <span class="med-name">Torsemide (Demadex)</span>
+                        <span class="med-class">Loop Diuretic</span>
+                    </label>
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="digoxin">
+                        <span class="med-name">Digoxin (Lanoxin)</span>
+                        <span class="med-class">Cardiac Glycoside</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Cholesterol Medications</h3>
+                <div class="med-checkbox-grid">
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="atorvastatin" checked>
+                        <span class="med-name">Atorvastatin (Lipitor)</span>
+                        <span class="med-class">Statin</span>
+                    </label>
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="rosuvastatin">
+                        <span class="med-name">Rosuvastatin (Crestor)</span>
+                        <span class="med-class">Statin</span>
+                    </label>
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="simvastatin">
+                        <span class="med-name">Simvastatin (Zocor)</span>
+                        <span class="med-class">Statin</span>
+                    </label>
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="ezetimibe">
+                        <span class="med-name">Ezetimibe (Zetia)</span>
+                        <span class="med-class">Cholesterol Absorption Inhibitor</span>
+                    </label>
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="evolocumab">
+                        <span class="med-name">Evolocumab (Repatha)</span>
+                        <span class="med-class">PCSK9 Inhibitor</span>
+                    </label>
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="icosapent_ethyl">
+                        <span class="med-name">Icosapent Ethyl (Vascepa)</span>
+                        <span class="med-class">Omega-3 (EPA)</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Diabetes Medications</h3>
+                <div class="med-checkbox-grid">
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="metformin" checked>
+                        <span class="med-name">Metformin (Glucophage)</span>
+                        <span class="med-class">Biguanide</span>
+                    </label>
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="empagliflozin">
+                        <span class="med-name">Empagliflozin (Jardiance)</span>
+                        <span class="med-class">SGLT2 Inhibitor</span>
+                    </label>
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="dapagliflozin">
+                        <span class="med-name">Dapagliflozin (Farxiga)</span>
+                        <span class="med-class">SGLT2 Inhibitor</span>
+                    </label>
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="canagliflozin">
+                        <span class="med-name">Canagliflozin (Invokana)</span>
+                        <span class="med-class">SGLT2 Inhibitor</span>
+                    </label>
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="semaglutide">
+                        <span class="med-name">Semaglutide (Ozempic/Wegovy)</span>
+                        <span class="med-class">GLP-1 Agonist</span>
+                    </label>
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="liraglutide">
+                        <span class="med-name">Liraglutide (Victoza)</span>
+                        <span class="med-class">GLP-1 Agonist</span>
+                    </label>
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="glipizide" checked>
+                        <span class="med-name">Glipizide (Glucotrol)</span>
+                        <span class="med-class">Sulfonylurea</span>
+                    </label>
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="sitagliptin">
+                        <span class="med-name">Sitagliptin (Januvia)</span>
+                        <span class="med-class">DPP-4 Inhibitor</span>
+                    </label>
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="insulin">
+                        <span class="med-name">Insulin (any type)</span>
+                        <span class="med-class">Insulin</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Blood Thinners</h3>
+                <div class="med-checkbox-grid">
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="aspirin">
+                        <span class="med-name">Aspirin (81mg or 325mg)</span>
+                        <span class="med-class">Antiplatelet</span>
+                    </label>
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="clopidogrel">
+                        <span class="med-name">Clopidogrel (Plavix)</span>
+                        <span class="med-class">Antiplatelet</span>
+                    </label>
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="apixaban" checked>
+                        <span class="med-name">Apixaban (Eliquis)</span>
+                        <span class="med-class">DOAC</span>
+                    </label>
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="rivaroxaban">
+                        <span class="med-name">Rivaroxaban (Xarelto)</span>
+                        <span class="med-class">DOAC</span>
+                    </label>
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="rivaroxaban_vascular">
+                        <span class="med-name">Rivaroxaban 2.5mg + ASA (COMPASS)</span>
+                        <span class="med-class">Vascular Protection</span>
+                    </label>
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="dabigatran">
+                        <span class="med-name">Dabigatran (Pradaxa)</span>
+                        <span class="med-class">DOAC</span>
+                    </label>
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="edoxaban">
+                        <span class="med-name">Edoxaban (Savaysa)</span>
+                        <span class="med-class">DOAC</span>
+                    </label>
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="warfarin">
+                        <span class="med-name">Warfarin (Coumadin)</span>
+                        <span class="med-class">Vitamin K Antagonist</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Osteoporosis Medications</h3>
+                <div class="med-checkbox-grid">
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="alendronate">
+                        <span class="med-name">Alendronate (Fosamax)</span>
+                        <span class="med-class">Bisphosphonate</span>
+                    </label>
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="risedronate">
+                        <span class="med-name">Risedronate (Actonel)</span>
+                        <span class="med-class">Bisphosphonate</span>
+                    </label>
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="zoledronic_acid">
+                        <span class="med-name">Zoledronic Acid (Reclast)</span>
+                        <span class="med-class">IV Bisphosphonate</span>
+                    </label>
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="denosumab">
+                        <span class="med-name">Denosumab (Prolia)</span>
+                        <span class="med-class">RANK Ligand Inhibitor</span>
+                    </label>
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="teriparatide">
+                        <span class="med-name">Teriparatide (Forteo)</span>
+                        <span class="med-class">PTH Analog</span>
+                    </label>
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="romosozumab">
+                        <span class="med-name">Romosozumab (Evenity)</span>
+                        <span class="med-class">Sclerostin Inhibitor</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Respiratory Medications</h3>
+                <div class="med-checkbox-grid">
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="fluticasone_inh">
+                        <span class="med-name">Fluticasone Inhaler (Flovent)</span>
+                        <span class="med-class">Inhaled Steroid</span>
+                    </label>
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="fluticasone_salmeterol">
+                        <span class="med-name">Fluticasone/Salmeterol (Advair)</span>
+                        <span class="med-class">ICS/LABA</span>
+                    </label>
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="tiotropium">
+                        <span class="med-name">Tiotropium (Spiriva)</span>
+                        <span class="med-class">LAMA</span>
+                    </label>
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="fluticasone_umeclidinium_vilanterol">
+                        <span class="med-name">Trelegy (Triple Inhaler)</span>
+                        <span class="med-class">ICS/LAMA/LABA</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Gout Medications</h3>
+                <div class="med-checkbox-grid">
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="allopurinol">
+                        <span class="med-name">Allopurinol (Zyloprim)</span>
+                        <span class="med-class">Xanthine Oxidase Inhibitor</span>
+                    </label>
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="febuxostat">
+                        <span class="med-name">Febuxostat (Uloric)</span>
+                        <span class="med-class">Xanthine Oxidase Inhibitor</span>
+                    </label>
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="colchicine">
+                        <span class="med-name">Colchicine (Colcrys)</span>
+                        <span class="med-class">Anti-inflammatory</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Pain & Nerve Medications</h3>
+                <div class="med-checkbox-grid">
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="gabapentin">
+                        <span class="med-name">Gabapentin (Neurontin)</span>
+                        <span class="med-class">Neuropathic Pain</span>
+                    </label>
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="pregabalin">
+                        <span class="med-name">Pregabalin (Lyrica)</span>
+                        <span class="med-class">Neuropathic Pain</span>
+                    </label>
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="duloxetine">
+                        <span class="med-name">Duloxetine (Cymbalta)</span>
+                        <span class="med-class">SNRI</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Other Medications</h3>
+                <div class="med-checkbox-grid">
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="omeprazole">
+                        <span class="med-name">Omeprazole (Prilosec)</span>
+                        <span class="med-class">Proton Pump Inhibitor</span>
+                    </label>
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="levothyroxine">
+                        <span class="med-name">Levothyroxine (Synthroid)</span>
+                        <span class="med-class">Thyroid Hormone</span>
+                    </label>
+                    <label class="med-checkbox">
+                        <input type="checkbox" data-med="vitamin-d">
+                        <span class="med-name">Vitamin D</span>
+                        <span class="med-class">Supplement</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="nav-buttons">
+                <button type="button" class="btn btn-secondary" onclick="goToSection(2)">← Back</button>
+                <button type="button" class="btn btn-primary" onclick="calculateResults()">Calculate Net Benefits →</button>
+            </div>
+        </section>
+
+        <!-- SECTION 4: Results -->
+        <section id="section-results" class="form-section">
+            <h2>Section 4: Your Personalized Results</h2>
+
+            <!-- Goals Summary -->
+            <div class="card results-card goals-summary-card">
+                <div id="goals-summary">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Calculated Risks Summary -->
+            <div class="card results-card">
+                <h3>Your Calculated Risk Profile</h3>
+                <div id="risk-summary" class="risk-summary">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Purpose Legend -->
+            <div class="card results-card purpose-legend-card">
+                <h3>Medication Purpose Categories</h3>
+                <div class="purpose-legend">
+                    <div class="purpose-item">
+                        <span class="tag purpose-preventive">PREVENT</span>
+                        <span class="purpose-desc">Prevents future events (e.g., statins, anticoagulants, bisphosphonates)</span>
+                    </div>
+                    <div class="purpose-item">
+                        <span class="tag purpose-disease_modifying">DISEASE-MOD</span>
+                        <span class="purpose-desc">Treats underlying disease and changes its course (e.g., HF meds, SGLT2i for CKD)</span>
+                    </div>
+                    <div class="purpose-item">
+                        <span class="tag purpose-symptomatic">SYMPTOM</span>
+                        <span class="purpose-desc">Relieves symptoms without altering disease (e.g., pain meds, loop diuretics)</span>
+                    </div>
+                    <div class="purpose-item">
+                        <span class="tag purpose-replacement">REPLACE</span>
+                        <span class="purpose-desc">Replaces missing hormones/nutrients (e.g., levothyroxine, vitamin D)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Current Medications Analysis -->
+            <div class="card results-card">
+                <h3>Analysis of Your Current Medications</h3>
+                <p class="results-description">Based on your goals of care and individual risk factors</p>
+                <div id="current-meds-analysis">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Potential Medications to Consider -->
+            <div class="card results-card">
+                <h3>Potential Medications to Consider</h3>
+                <p class="results-description">Best options by medication class based on your profile</p>
+                <div id="potential-meds">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+
+            <div class="nav-buttons">
+                <button type="button" class="btn btn-secondary" onclick="goToSection(3)">← Back to Medications</button>
+                <button type="button" class="btn btn-primary" onclick="printResults()">Print Results</button>
+            </div>
+
+            <div class="disclaimer">
+                <strong>Important Disclaimer:</strong> This tool is for educational purposes only and should not replace medical advice.
+                All medication decisions should be made in consultation with your healthcare provider.
+                The calculations are estimates based on published clinical trial data and may not fully capture your individual situation.
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>Patient-Centered Medication Benefit Calculator | Based on evidence-based medicine principles</p>
+            <p>Created for educational purposes | Always consult your healthcare provider</p>
+        </div>
+    </footer>
+
+    <script src="medications-database.js"></script>
+    <script src="risk-calculators.js"></script>
+    <script src="benefit-engine.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
